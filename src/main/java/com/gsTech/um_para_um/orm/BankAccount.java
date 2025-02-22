@@ -9,7 +9,8 @@ public class BankAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String holder;
+    @OneToOne(mappedBy = "bankAccount")
+    private Holder holder;
     private Integer agency;
     private String accountNumber;
 
@@ -23,13 +24,6 @@ public class BankAccount {
         return id;
     }
 
-    public String getHolder() {
-        return holder;
-    }
-
-    public void setHolder(String holder) {
-        this.holder = holder;
-    }
 
     public Integer getAgency() {
         return agency;
