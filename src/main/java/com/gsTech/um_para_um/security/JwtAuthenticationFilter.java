@@ -26,11 +26,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private HolderService holderService;
 
 
+    // Ele intercepta as requisições HTTP para verificar a presença de um token JWT
+    // Este é o método sobrescrito de um filtro personalizado, que vai manipular a requisição antes que ela chegue ao controlador
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
+    protected void doFilterInternal(HttpServletRequest request,   // requisicao HTTP
+                                    HttpServletResponse response, // resposta HTTP
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        // O código pega o valor do cabeçalho Authorization da requisição. Esse cabeçalho deve conter o token JWT.
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         // verifica se o header existe e comeca com bearer
@@ -39,16 +42,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // extrai o token do header
+        // extrai o token do header (cabecalho)
         String token = header.substring(7);
 
 
         try {
+            // extrai o nome do usuario do token JWT
             String username = jwtTokenUtil.getUserNameFromToken(token);
 
+            // Verifica se o usuario foi extraido com sucesso do token
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // verifica se o token e valido antes de authenticar
+                // verifica se o token e valido ou nao esta expirado antes de authenticar
                 if (jwtTokenUtil.validateToken(token)) {
 
                     UserDetails user = holderService.loadUserByUsername(username);
@@ -61,6 +66,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             logger.warn("Erro ao processar o JWT: " + e.getMessage());
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response); // proximo filtro a ser executado apos esse filtro
     }
 }

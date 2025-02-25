@@ -1,5 +1,6 @@
 package com.gsTech.um_para_um.orm;
 
+import com.gsTech.um_para_um.enums.Flag;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -10,10 +11,11 @@ public class DebitCard {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String cardNumber;
+    private Long cardNumber;
     private LocalDate expirationDate;
     private Integer securityCode;
-    private String cardFlag;
+    @Enumerated(EnumType.STRING)
+    private Flag cardFlag;
 
     @OneToOne(mappedBy = "debitCard")
     private BankAccount bankAccount;
@@ -21,15 +23,22 @@ public class DebitCard {
     public DebitCard() {
     }
 
+    public DebitCard(Long cardNumber, LocalDate expirationDate, Integer securityCode, Flag cardFlag) {
+        this.cardNumber = cardNumber;
+        this.expirationDate = expirationDate;
+        this.securityCode = securityCode;
+        this.cardFlag = cardFlag;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public String getCardNumber() {
+    public Long getCardNumber() {
         return cardNumber;
     }
 
-    public void setCardNumber(String cardNumber) {
+    public void setCardNumber(Long cardNumber) {
         this.cardNumber = cardNumber;
     }
 
@@ -49,11 +58,11 @@ public class DebitCard {
         this.securityCode = securityCode;
     }
 
-    public String getCardFlag() {
+    public Flag getCardFlag() {
         return cardFlag;
     }
 
-    public void setCardFlag(String cardFlag) {
+    public void setCardFlag(Flag cardFlag) {
         this.cardFlag = cardFlag;
     }
 

@@ -30,6 +30,15 @@ public class Holder implements UserDetails {
     public Holder() {
     }
 
+    public Holder(String name, Integer age, String email, String password, Role role, BankAccount bankAccount) {
+        this.name = name;
+        this.age = age;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.bankAccount = bankAccount;
+    }
+
     public String getName() {
         return name;
     }
