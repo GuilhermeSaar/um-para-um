@@ -1,5 +1,6 @@
 package com.gsTech.um_para_um.security;
 
+import com.gsTech.um_para_um.service.HolderService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,8 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,10 +20,10 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private HolderService holderService;
 
 
     @Override
@@ -42,34 +41,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // extrai o token do header
         String token = header.substring(7);
-        String email = null;
+
 
         try {
-            email = jwtUtil.getEmailFromToken(token);
+            String username = jwtTokenUtil.getUserNameFromToken(token);
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                // verifica se o token e valido antes de authenticar
+                if (jwtTokenUtil.validateToken(token)) {
+
+                    UserDetails user = holderService.loadUserByUsername(username);
+                    var authenticated = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authenticated);
+                }
+            }
 
         } catch (Exception e) {
             logger.warn("Erro ao processar o JWT: " + e.getMessage());
-        }
-
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            // carrega detalhes do ususario
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            // valida o token
-            if (jwtUtil.validateToken(token)) {
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()
-                        );
-
-                // adiciona detalhes da requisicao
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // define a autenticacao no contexto de seguranca
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            }
         }
 
         filterChain.doFilter(request, response);
